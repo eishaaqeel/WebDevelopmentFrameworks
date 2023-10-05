@@ -42,4 +42,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    //if you have an existing user and want to see thier posts
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
 }

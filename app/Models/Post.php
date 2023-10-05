@@ -43,9 +43,10 @@ class Post
         return array_map(fn($file)=> $file ->getContents(), $files);
         */
 
-        //laravels collection approch - collect an array and wrap it within a colection object
-        //find all of the posts in the posts directory and collect them into a collection and then map (loop) over each item and for each one parse that file into a document
-        return collect(File::files(resource_path("posts")))
+        return cache()->rememberForever('posts.all', function (){
+            //laravels collection approch - collect an array and wrap it within a colection object
+            //find all of the posts in the posts directory and collect them into a collection and then map (loop) over each item and for each one parse that file into a document
+            return collect(File::files(resource_path("posts")))
             ->map(fn($file) => YamlFrontMatter::parseFile($file))
             //once you have a collection of documents, then map over for a second time, but this time we build our own Post object
             ->map(fn ($document) => new Post(
@@ -54,8 +55,10 @@ class Post
                 $document->date,
                 $document->body(),
                 $document->slug
-            ));
-
+            ))
+            //make the posts show in this order (post with the most recent date shows up first):
+            ->sortByDesc('date');
+        });
     }
 
     public static function find($slug)
@@ -84,6 +87,17 @@ class Post
 
         // of all the blog posts, find the one with a slug (id) that matches the one that was requested:
         return static::all()->firstWhere('slug', $slug);
+
+    }
+
+    public static function findOrFail($slug)
+    {
+        $post = static::find($slug);
+
+        if (! $post){
+            throw new ModelNotFoundException();
+        }
+        return $post;
 
     }
 }

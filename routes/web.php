@@ -1,12 +1,15 @@
 <?php
 
-use App\Models\Post;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\SessionsController;
 use Illuminate\Support\Facades\Route;
+use App\Models\Category;
+use App\Models\Post;
+use App\Models\User;
 use Spatie\YamlFrontMatter\YamlFrontMatter;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\File;
-use App\Models\User;
-use App\Models\Category;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,28 +22,29 @@ use App\Models\Category;
 |
 */
 
-Route::get('/', function () {
-    return view('posts',[
-        //'posts' => Post::latest()->with(['category', 'author'])->get()
-        'posts' => Post::latest()->get()
-    ]);
-});
+Route::get('/', [PostController::class, 'index'])->name('home');
 
-Route::get('posts/{post:slug}', function (Post $post) {     // Post::where('slug', $post)->firstOrFail()
-    //Find a post by its slug and pass it to a view called "post"
-    return view('post', [
-        'post' => $post
-    ]);
-});
+Route::get('posts/{post:slug}', [PostController::class, 'show']);
 
-Route::get('categories/{category:slug}', function (Category $category) {
-    return view('posts', [
-        'posts' => $category->posts
-    ]);
-});
+// Route::get('categories/{category:slug}', function (Category $category) {
+//     return view('posts', [
+//         'posts' => $category->posts,
+//         'currentCategory' => $category,
+//         'categories' => Category::all()
+//     ]);
+// })->name('category');
 
-Route::get('authors/{author:username}', function (User $author) {
-    return view('posts', [
-        'posts' => $author->posts
-    ]);
-});
+
+// Route::get('authors/{author:username}', function (User $author) {
+//     return view('posts.index', [
+//         'posts' => $author->posts
+//     ]);
+// });
+
+//middleware('guest') is so that if a user is loged in, they souldn't be able to register or login agian from there
+Route::get('register', [RegisterController::class, 'create'])->middleware('guest');
+Route::post('register', [RegisterController::class, 'store'])->middleware('guest');
+Route::get('login', [SessionsController::class, 'create'])->middleware('guest');
+Route::post('login', [SessionsController::class, 'store'])->middleware('guest');
+//->middleware('auth') means the user has to be authenticated(already logged in) to reach the logout page
+Route::post('logout', [SessionsController::class, 'destroy'])->middleware('auth');

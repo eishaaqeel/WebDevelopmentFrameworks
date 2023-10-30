@@ -20,8 +20,11 @@ class CategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->word,
-            'slug' => $this->faker->slug
+            'name' => $this->faker->unique()->word(),
+            'slug' => $this->faker->unique()->slug(),
+            //2 lines below are commented because they were causing a UniqueConstraintViolationException so Im using the 2 lines above instead*
+            //'name' => $this->faker->word,
+            //'slug' => $this->faker->slug
         ];
     }
 }
